@@ -51,7 +51,6 @@ class ImageFromDirSelector:
             self.current_image = sampled_image_name
           
         image = Image.open(os.path.join(full_path, sampled_image_name))
-        print(unique_id)
         PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": sampled_image_name})
         
         return pil_to_tens(image).unsqueeze(0)
