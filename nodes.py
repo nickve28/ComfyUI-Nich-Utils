@@ -8,6 +8,8 @@ import random
 from PIL import Image
 
 def pil_to_tens(image):
+    if image.mode == 'RGBA':
+      image = image.convert('RGB')
     to_tensor = ToTensor()
     tensor = to_tensor(image).unsqueeze(0).permute(0, 2, 3, 1)
     return tensor
