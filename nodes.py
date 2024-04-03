@@ -15,8 +15,9 @@ def pil_to_tens(image):
     return tensor
 
 class ImageFromDirSelector:
-    def __init__(self):
+    def __init__(self) -> None:
         self.current_image = None
+        self.current_tensor = None
 
     CATEGORY = 'Nich/utils'
     RETURN_TYPES = ("IMAGE",)
@@ -37,25 +38,36 @@ class ImageFromDirSelector:
             "hidden": {"unique_id": "UNIQUE_ID"}
         }
     
-    @classmethod
-    def IS_CHANGED(cls, _directory, keep_current_selection, unique_id):
-        # TODO
+    def get_current_image(self, selected_image_name):
+        if self.current_image:
+            return self.current_image
+        return selected_image_name
+    
+    def requires_new_image(self, current_image, keep_current_selection):
+        if not current_image:
+            return True
         return not keep_current_selection
 
     def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None):
         full_path = os.path.expanduser(directory)
-        files = os.listdir(full_path)
-
-        sampled_image_name = self.current_image or selected_image_name
-        if (not sampled_image_name) or (not keep_current_selection):
+       
+        prior_selected_image = self.get_current_image(selected_image_name)
+        new_image = prior_selected_image
+        new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
+        if new_image_required:
+            files = os.listdir(full_path)
             image_files = [file for file in files if file.endswith(('.png', '.jpg', '.jpeg', 'webp'))]
-            sampled_image_name = random.choice(image_files) 
-            self.current_image = sampled_image_name
+            self.current_image = random.choice(image_files) 
+            new_image = self.current_image
           
-        image = Image.open(os.path.join(full_path, sampled_image_name))
-        PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": sampled_image_name})
         
-        return pil_to_tens(image).unsqueeze(0)
+        PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
+
+        if new_image_required or self.current_tensor is None:
+          image = Image.open(os.path.join(full_path, new_image))
+          self.current_tensor = pil_to_tens(image).unsqueeze(0)
+        
+        return self.current_tensor
 
 NODE_CLASS_MAPPINGS = {
     "Image from Dir Selector (Nich)": ImageFromDirSelector
