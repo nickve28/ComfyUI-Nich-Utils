@@ -39,7 +39,7 @@ class ImageFromDirSelector:
         }
 
     @classmethod
-    def IS_CHANGED(self, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None):
+    def IS_CHANGED(cls, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None):
         return "" if keep_current_selection else selected_image_filename
 
     def get_current_image(self, selected_image_name):
