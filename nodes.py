@@ -43,7 +43,7 @@ class ImageFromDirSelector:
         return "" if keep_current_selection else selected_image_filename
 
     def get_current_image(self, selected_image_name):
-        return self.current_image if self.current_image else selected_image_name
+        return selected_image_name if selected_image_name else self.current_image
 
     def requires_new_image(self, current_image, keep_current_selection):
         return not current_image or not keep_current_selection
