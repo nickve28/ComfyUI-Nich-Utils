@@ -37,6 +37,12 @@ class ImageFromDirSelector:
             },
             "hidden": {"unique_id": "UNIQUE_ID"}
         }
+
+    @classmethod  
+    def IS_CHANGED(self, directory, unique_id, keep_current_selection, selected_image_filename):
+        if keep_current_selection:
+            return ""
+        return selected_image_filename
     
     def get_current_image(self, selected_image_name):
         if self.current_image:
