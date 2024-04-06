@@ -4,6 +4,7 @@ from torchvision.transforms import ToTensor
 
 from server import PromptServer
 import os
+import re
 import random
 from PIL import Image
 
@@ -35,11 +36,14 @@ class ImageFromDirSelector:
                 "keep_current_selection": ("BOOLEAN", { "default": False }),
                 "selected_image_name": ("STRING", { "multiline": True, "dynamicPrompts": False })
             },
+            "optional": {
+                "regexp_filter": ("STRING", { "default": None, "multiline": True })
+            },
             "hidden": {"unique_id": "UNIQUE_ID"}
         }
 
     @classmethod  
-    def IS_CHANGED(self, directory, unique_id, keep_current_selection, selected_image_filename):
+    def IS_CHANGED(self, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None):
         if keep_current_selection:
             return ""
         return selected_image_filename
@@ -53,20 +57,30 @@ class ImageFromDirSelector:
         if not current_image:
             return True
         return not keep_current_selection
+    
+    def get_files(self, full_path, regexp_filter):
+        files = os.listdir(full_path)
+        reg = re.compile(regexp_filter)
+        if regexp_filter is not None and regexp_filter is not "":
+          result = []
+          for file in files:
+            if re.search(reg, file):
+                result.append(file)
+          if len(result) > 0:
+            return result
+        return files
 
-    def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None):
+    def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None):
         full_path = os.path.expanduser(directory)
-       
         prior_selected_image = self.get_current_image(selected_image_name)
         new_image = prior_selected_image
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
-            files = os.listdir(full_path)
+            files = self.get_files(full_path, regexp_filter)
             image_files = [file for file in files if file.endswith(('.png', '.jpg', '.jpeg', 'webp'))]
             self.current_image = random.choice(image_files) 
             new_image = self.current_image
           
-        
         PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
 
         if new_image_required or self.current_tensor is None:
