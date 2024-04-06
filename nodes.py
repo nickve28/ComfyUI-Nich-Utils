@@ -50,14 +50,9 @@ class ImageFromDirSelector:
 
     def get_files(self, full_path, regexp_filter):
         files = os.listdir(full_path)
-        reg = re.compile(regexp_filter)
-        if regexp_filter is not None and regexp_filter is not "":
-            result = []
-            for file in files:
-                if re.search(reg, file):
-                    result.append(file)
-            if len(result) > 0:
-                return result
+        if regexp_filter:
+            reg = re.compile(regexp_filter)
+            files = [file for file in files if re.search(reg, file)]
         return files
 
     def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None):
