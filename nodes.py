@@ -46,9 +46,7 @@ class ImageFromDirSelector:
         return self.current_image if self.current_image else selected_image_name
 
     def requires_new_image(self, current_image, keep_current_selection):
-        if not current_image:
-            return True
-        return not keep_current_selection
+        return not current_image or not keep_current_selection
 
     def get_files(self, full_path, regexp_filter):
         files = os.listdir(full_path)
