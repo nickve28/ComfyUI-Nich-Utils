@@ -1,5 +1,3 @@
-import torch
-import numpy as np
 from torchvision.transforms import ToTensor
 
 from server import PromptServer
