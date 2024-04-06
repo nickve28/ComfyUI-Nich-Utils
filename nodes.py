@@ -62,7 +62,7 @@ class ImageFromDirSelector:
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
             files = self.get_files(full_path, regexp_filter)
-            image_files = [file for file in files if file.endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+            image_files = [file for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
             self.current_image = random.choice(image_files)
             new_image = self.current_image
 
