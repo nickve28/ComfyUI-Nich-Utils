@@ -11,6 +11,14 @@ def pil_to_tens(image):
       image = image.convert('RGB')
     return ToTensor()(image).unsqueeze(0).permute(0, 2, 3, 1)
 
+def list_files(full_path):
+    files_list = []
+    for root, _directories, files in os.walk(full_path):
+        for file_name in files:
+            relative_path = os.path.relpath(os.path.join(root, file_name), full_path)
+            files_list.append(relative_path)
+    return files_list    
+
 class ImageFromDirSelector:
     def __init__(self) -> None:
         self.current_image = None
@@ -30,7 +38,8 @@ class ImageFromDirSelector:
             "required": {
                 "directory": ("STRING", { "default": "~/images" }),
                 "keep_current_selection": ("BOOLEAN", { "default": False }),
-                "selected_image_name": ("STRING", { "multiline": True, "dynamicPrompts": False })
+                "selected_image_name": ("STRING", { "multiline": True, "dynamicPrompts": False }),
+                "include_subdirectories": ("BOOLEAN", { "default": False }),
             },
             "optional": {
                 "regexp_filter": ("STRING", { "default": None, "multiline": True })
@@ -49,13 +58,13 @@ class ImageFromDirSelector:
         return not current_image or not keep_current_selection
 
     def get_files(self, full_path, regexp_filter):
-        files = os.listdir(full_path)
+        files = list_files(full_path)
         if regexp_filter:
             reg = re.compile(regexp_filter)
             files = [file for file in files if re.search(reg, file)]
         return files
 
-    def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None):
+    def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None,include_subdirectories=False):
         full_path = os.path.expanduser(directory)
         prior_selected_image = self.get_current_image(selected_image_name)
         new_image = prior_selected_image
