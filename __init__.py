@@ -1,4 +1,4 @@
-from .nodes import NODE_CLASS_MAPPINGS
+from .src.nodes import NODE_CLASS_MAPPINGS
 
 WEB_DIRECTORY = "./javascript"
 
