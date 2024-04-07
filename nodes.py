@@ -11,13 +11,16 @@ def pil_to_tens(image):
       image = image.convert('RGB')
     return ToTensor()(image).unsqueeze(0).permute(0, 2, 3, 1)
 
-def list_files(full_path):
-    files_list = []
-    for root, _directories, files in os.walk(full_path):
-        for file_name in files:
-            relative_path = os.path.relpath(os.path.join(root, file_name), full_path)
-            files_list.append(relative_path)
-    return files_list    
+def list_files(full_path, include_subdirectories):
+    if include_subdirectories:
+        files_list = []
+        for root, _directories, files in os.walk(full_path):
+            for file_name in files:
+                relative_path = os.path.relpath(os.path.join(root, file_name), full_path)
+                files_list.append(relative_path)
+        return files_list   
+    
+    return os.listdir(full_path)
 
 class ImageFromDirSelector:
     def __init__(self) -> None:
@@ -48,7 +51,7 @@ class ImageFromDirSelector:
         }
 
     @classmethod
-    def IS_CHANGED(cls, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None):
+    def IS_CHANGED(cls, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None,include_subdirectories=False):
         return "" if keep_current_selection else selected_image_filename
 
     def get_current_image(self, selected_image_name):
@@ -57,8 +60,8 @@ class ImageFromDirSelector:
     def requires_new_image(self, current_image, keep_current_selection):
         return not current_image or not keep_current_selection
 
-    def get_files(self, full_path, regexp_filter):
-        files = list_files(full_path)
+    def get_files(self, full_path, regexp_filter, include_subdirectories):
+        files = list_files(full_path, include_subdirectories)
         if regexp_filter:
             reg = re.compile(regexp_filter)
             files = [file for file in files if re.search(reg, file)]
@@ -70,7 +73,7 @@ class ImageFromDirSelector:
         new_image = prior_selected_image
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
-            files = self.get_files(full_path, regexp_filter)
+            files = self.get_files(full_path, regexp_filter, include_subdirectories)
             image_files = [file for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
             self.current_image = random.choice(image_files)
             new_image = self.current_image
