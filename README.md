@@ -1,4 +1,4 @@
-# Nich Comfy Utils (V0.0.2)
+# Nich Comfy Utils - v0.0.2
 
 **This library is still in early development! It will likely contain bugs or oddities**
 
@@ -14,19 +14,7 @@ This node will select a random image from the provided  folder. It allows for
 - Selecting a random image for IPadapter
 - Cycling controlnet poses
 
-
 # Open work
 - Improve code
 - Add tests
 - More nodes!
-
-## Changelog
-
-### V0.0.2
-
-- Add subdirectory traversal (#3)[https://github.com/nickve28/ComfyUI-Nich-Utils/pull/3]
-
-### V0.0.01
-
-- Initial setup
-- Regexp filtering, keep current image, persist to workflow json
