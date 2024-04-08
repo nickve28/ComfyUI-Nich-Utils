@@ -11,26 +11,25 @@ def pil_to_tens(image):
       image = image.convert('RGB')
     return ToTensor()(image).unsqueeze(0).permute(0, 2, 3, 1)
 
+def file_matches_filter(relative_file_path, filter_regex, extensions=None):
+    if extensions is not None:
+        if not any(relative_file_path.endswith(ext) for ext in extensions):
+            return False
+    return True if not filter_regex else re.search(filter_regex, relative_file_path)
 
-def file_matches_filter(relative_file_path, filter):
-    if not filter:
-        return True
+def list_files(full_path, include_subdirectories, filename_filter_regexp=None, extensions=None):
+    files_list = []
+    for root, _, files in os.walk(full_path):
+        for file_name in files:
+            relative_path = os.path.relpath(os.path.join(root, file_name), full_path)
 
-    return re.search(filter, relative_file_path)
+            if file_matches_filter(relative_path, filename_filter_regexp, extensions):
+                files_list.append(relative_path)
 
+        if not include_subdirectories:
+            break
 
-def list_files(full_path, include_subdirectories, filename_filter_regexp):
-    if include_subdirectories:
-        files_list = []
-        for root, _directories, files in os.walk(full_path):
-            for file_name in files:
-                relative_path = os.path.relpath(os.path.join(root, file_name), full_path)
-                
-                if file_matches_filter(relative_path, filename_filter_regexp):
-                    files_list.append(relative_path) 
-        return files_list
-    
-    return [relative_file_path for relative_file_path in os.listdir(full_path) if file_matches_filter(relative_file_path, filename_filter_regexp)]
+    return files_list
 
 
 class ImageFromDirSelector:
@@ -75,12 +74,12 @@ class ImageFromDirSelector:
         return not current_image or not keep_current_selection
 
 
-    def get_files(self, full_path, regexp_filter, include_subdirectories):
+    def get_files(self, full_path, regexp_filter, include_subdirectories, extensions):
         filename_filter_regexp = None
         if regexp_filter:
             filename_filter_regexp = re.compile(regexp_filter)
 
-        return list_files(full_path, include_subdirectories, filename_filter_regexp)
+        return list_files(full_path, include_subdirectories, filename_filter_regexp, extensions)
 
 
     def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None,include_subdirectories=False):
@@ -89,8 +88,7 @@ class ImageFromDirSelector:
         new_image = prior_selected_image
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
-            files = self.get_files(full_path, regexp_filter, include_subdirectories)
-            image_files = [file for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
+            image_files = self.get_files(full_path, regexp_filter, include_subdirectories, ['.png', '.jpg', '.jpeg', '.webp'])
             self.current_image = random.choice(image_files)
             new_image = self.current_image
 
