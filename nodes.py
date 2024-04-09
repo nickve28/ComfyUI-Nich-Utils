@@ -1,6 +1,7 @@
 
 
 import time
+import uuid
 from server import PromptServer
 import os
 import re
@@ -16,7 +17,6 @@ class ImageFromDirSelector:
         self.current_tensor = None
         seed = int.from_bytes(os.urandom(4), 'big') + int(time.time() * 1000)
         self.random_number_generator = random.Random(seed)
-        self.last_change_diff_value = ""
 
     CATEGORY = 'Nich/utils'
     RETURN_TYPES = ("IMAGE",)
@@ -43,7 +43,7 @@ class ImageFromDirSelector:
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return "" if kwargs['keep_current_selection'] else kwargs['selected_image_filename']
+        return kwargs['selected_image_name'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
 
 
     def get_current_image(self, selected_image_name):
