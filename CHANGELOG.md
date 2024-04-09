@@ -1,8 +1,9 @@
 # Changelog
 
-## untagged
+## v0.0.3
 
-- Empty
+- Keep current no longer reloads the image* (Still when switching from False to True though!)
+- Make sure the image random generator is not influenced by outside sources
 
 ## v0.0.2
 

@@ -1,5 +1,6 @@
 
 
+import time
 from server import PromptServer
 import os
 import re
@@ -13,7 +14,9 @@ class ImageFromDirSelector:
     def __init__(self) -> None:
         self.current_image = None
         self.current_tensor = None
-
+        seed = int.from_bytes(os.urandom(4), 'big') + int(time.time() * 1000)
+        self.random_number_generator = random.Random(seed)
+        self.last_change_diff_value = ""
 
     CATEGORY = 'Nich/utils'
     RETURN_TYPES = ("IMAGE",)
@@ -29,7 +32,7 @@ class ImageFromDirSelector:
             "required": {
                 "directory": ("STRING", { "default": "~/images" }),
                 "keep_current_selection": ("BOOLEAN", { "default": False }),
-                "selected_image_name": ("STRING", { "multiline": True, "dynamicPrompts": False }),
+                "selected_image_name": ("STRING", { "multiline": True }),
                 "include_subdirectories": ("BOOLEAN", { "default": False }),
             },
             "optional": {
@@ -39,8 +42,8 @@ class ImageFromDirSelector:
         }
 
     @classmethod
-    def IS_CHANGED(cls, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None, include_subdirectories=False):
-        return "" if keep_current_selection else selected_image_filename
+    def IS_CHANGED(cls, **kwargs):
+        return "" if kwargs['keep_current_selection'] else kwargs['selected_image_filename']
 
 
     def get_current_image(self, selected_image_name):
@@ -66,7 +69,7 @@ class ImageFromDirSelector:
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
             image_files = self.get_files(full_path, regexp_filter, include_subdirectories)
-            self.current_image = random.choice(image_files)
+            self.current_image = self.random_number_generator.choice(image_files)
             new_image = self.current_image
 
         PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
