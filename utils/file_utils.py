@@ -27,3 +27,11 @@ def list_images(full_path: str, include_subdirectories: bool, filename_filter_re
             break
 
     return files_list
+
+
+"""
+Strips the extension from the provided filename
+eg: heaven.png will return heaven
+"""
+def filename_without_extension(filename):
+    return os.path.splitext(filename)[0]

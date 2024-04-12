@@ -8,7 +8,7 @@ import re
 import random
 from PIL import Image
 
-from .utils.file_utils import list_images
+from .utils.file_utils import filename_without_extension, list_images
 from .utils.tensor_utils import pil_to_tens
 
 class ImageFromDirSelector:
@@ -19,12 +19,10 @@ class ImageFromDirSelector:
         self.random_number_generator = random.Random(seed)
 
     CATEGORY = 'Nich/utils'
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("images",)
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING",)
+    RETURN_NAMES = ("image", "filename", "filename_without_extension",)
 
     FUNCTION = "sample_images"
-
-    OUTPUT_IS_LIST = (False,)
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -78,7 +76,7 @@ class ImageFromDirSelector:
             image = Image.open(os.path.join(full_path, new_image))
             self.current_tensor = pil_to_tens(image).unsqueeze(0)
 
-        return self.current_tensor
+        return self.current_tensor, self.current_image, filename_without_extension(self.current_image)
 
 
 NODE_CLASS_MAPPINGS = {
