@@ -7,6 +7,7 @@ import os
 import re
 import random
 from PIL import Image
+from operator import attrgetter
 
 from .utils.file_utils import filename_without_extension, list_images
 from .utils.tensor_utils import pil_to_tens
@@ -19,8 +20,8 @@ class ImageFromDirSelector:
         self.random_number_generator = random.Random(seed)
 
     CATEGORY = 'Nich/utils'
-    RETURN_TYPES = ("IMAGE", "STRING", "STRING",)
-    RETURN_NAMES = ("image", "filename", "filename_without_extension",)
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING")
+    RETURN_NAMES = ("image", "filename", "filename_without_extension")
 
     FUNCTION = "sample_images"
 
@@ -60,7 +61,14 @@ class ImageFromDirSelector:
         return list_images(full_path, include_subdirectories, filename_filter_regexp)
 
 
-    def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None,include_subdirectories=False):
+    def sample_images(self, *_args, **kwargs):
+        directory = kwargs['directory']
+        selected_image_name = kwargs['selected_image_name']
+        keep_current_selection = kwargs['keep_current_selection']
+        regexp_filter = kwargs['regexp_filter']
+        include_subdirectories = kwargs['include_subdirectories']
+        unique_id = kwargs['unique_id']
+        
         full_path = os.path.expanduser(directory)
         prior_selected_image = self.get_current_image(selected_image_name)
         new_image = prior_selected_image
@@ -74,9 +82,9 @@ class ImageFromDirSelector:
 
         if new_image_required or self.current_tensor is None:
             image = Image.open(os.path.join(full_path, new_image))
-            self.current_tensor = pil_to_tens(image).unsqueeze(0)
+            self.current_tensor = pil_to_tens(image)
 
-        return self.current_tensor, self.current_image, filename_without_extension(self.current_image)
+        return (self.current_tensor, self.current_image, filename_without_extension(self.current_image))
 
 
 NODE_CLASS_MAPPINGS = {
