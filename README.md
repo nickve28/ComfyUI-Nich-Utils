@@ -1,4 +1,4 @@
-# Nich Comfy Utils - v0.0.3
+# Nich Comfy Utils
 
 **This library is still in early development! It will likely contain bugs or oddities**
 
