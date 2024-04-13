@@ -1,5 +1,7 @@
 
+import numpy as np
 from torch import Tensor
+import torch
 from torchvision.transforms import ToTensor
 from PIL import Image
 
@@ -8,6 +10,6 @@ Converts a given PIL image to a tensor
 if the given image is a RGBA image (has alpha channel), it is converted to RGB prior
 """
 def pil_to_tens(image: Image) -> Tensor:
-    if image.mode == 'RGBA':
-        image = image.convert('RGB')
-    return ToTensor()(image).unsqueeze(0).permute(0, 2, 3, 1)
+    output = image.convert("RGB")
+    output = np.array(output).astype(np.float32) / 255.0
+    return torch.from_numpy(output)[None,]
