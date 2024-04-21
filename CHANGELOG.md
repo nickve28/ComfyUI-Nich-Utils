@@ -1,5 +1,9 @@
 # Changelog
 
+## untagged
+
+- Don't crash on keep current image without image, load the specific image instead (#7)[https://github.com/nickve28/ComfyUI-Nich-Utils/pull/7]
+
 ## v0.0.4
 
 - Expose filename with and without extension (#5)[https://github.com/nickve28/ComfyUI-Nich-Utils/pull/5]

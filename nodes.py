@@ -69,6 +69,8 @@ class ImageFromDirSelector:
         include_subdirectories = kwargs['include_subdirectories']
         unique_id = kwargs['unique_id']
         
+        # todo, this image logic is a bit underestimated
+        # make an ImageSelector class which should be comfy independent and easily testable too
         full_path = os.path.expanduser(directory)
         prior_selected_image = self.get_current_image(selected_image_name)
         new_image = prior_selected_image
@@ -77,6 +79,8 @@ class ImageFromDirSelector:
             image_files = self.get_files(full_path, regexp_filter, include_subdirectories)
             self.current_image = self.random_number_generator.choice(image_files)
             new_image = self.current_image
+        elif self.current_image is None:
+            self.current_image = selected_image_name
 
         PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
 
