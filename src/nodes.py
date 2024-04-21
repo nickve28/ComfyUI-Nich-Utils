@@ -9,6 +9,8 @@ import random
 from PIL import Image
 from operator import attrgetter
 
+from utils.image_selector import ImageSelector
+
 from .utils.file_utils import filename_without_extension, list_images
 from .utils.tensor_utils import pil_to_tens
 
@@ -16,8 +18,9 @@ class ImageFromDirSelector:
     def __init__(self) -> None:
         self.current_image = None
         self.current_tensor = None
-        seed = int.from_bytes(os.urandom(4), 'big') + int(time.time() * 1000)
-        self.random_number_generator = random.Random(seed)
+        # seed = int.from_bytes(os.urandom(4), 'big') + int(time.time() * 1000)
+        # self.random_number_generator = random.Random(seed)
+        self.image_selector = ImageSelector()
 
     CATEGORY = 'Nich/utils'
     RETURN_TYPES = ("IMAGE", "STRING", "STRING")
@@ -68,27 +71,37 @@ class ImageFromDirSelector:
         regexp_filter = kwargs['regexp_filter']
         include_subdirectories = kwargs['include_subdirectories']
         unique_id = kwargs['unique_id']
-        
+
+        image_path, image, tensor = self.image_selector.cycle_image(
+            directory,
+            selected_image_name,
+            include_subdirectories,
+            regexp_filter
+        )
+
+        PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": image })
+
+        return (tensor, image_path, filename_without_extension(image_path))
         # todo, this image logic is a bit underestimated
         # make an ImageSelector class which should be comfy independent and easily testable too
-        full_path = os.path.expanduser(directory)
-        prior_selected_image = self.get_current_image(selected_image_name)
-        new_image = prior_selected_image
-        new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
-        if new_image_required:
-            image_files = self.get_files(full_path, regexp_filter, include_subdirectories)
-            self.current_image = self.random_number_generator.choice(image_files)
-            new_image = self.current_image
-        elif self.current_image is None:
-            self.current_image = selected_image_name
+        # full_path = os.path.expanduser(directory)
+        # prior_selected_image = self.get_current_image(selected_image_name)
+        # new_image = prior_selected_image
+        # new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
+        # if new_image_required:
+        #     image_files = self.get_files(full_path, regexp_filter, include_subdirectories)
+        #     self.current_image = self.random_number_generator.choice(image_files)
+        #     new_image = self.current_image
+        # elif self.current_image is None:
+        #     self.current_image = selected_image_name
 
-        PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
+        # PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
 
-        if new_image_required or self.current_tensor is None:
-            image = Image.open(os.path.join(full_path, new_image))
-            self.current_tensor = pil_to_tens(image)
+        # if new_image_required or self.current_tensor is None:
+        #     image = Image.open(os.path.join(full_path, new_image))
+        #     self.current_tensor = pil_to_tens(image)
 
-        return (self.current_tensor, self.current_image, filename_without_extension(self.current_image))
+        # return (self.current_tensor, self.current_image, filename_without_extension(self.current_image))
 
 
 NODE_CLASS_MAPPINGS = {
