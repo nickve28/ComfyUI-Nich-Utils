@@ -1,6 +1,6 @@
 # Changelog
 
-## untagged
+## v0.0.5
 
 - Don't crash on keep current image without image, load the specific image instead (#7)[https://github.com/nickve28/ComfyUI-Nich-Utils/pull/7]
 
