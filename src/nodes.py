@@ -1,28 +1,29 @@
-from torchvision.transforms import ToTensor
 
+
+import time
+import uuid
 from server import PromptServer
 import os
 import re
 import random
 from PIL import Image
+from operator import attrgetter
 
-def pil_to_tens(image):
-    if image.mode == 'RGBA':
-      image = image.convert('RGB')
-    return ToTensor()(image).unsqueeze(0).permute(0, 2, 3, 1)
+from .utils.file_utils import filename_without_extension, list_images
+from .utils.tensor_utils import pil_to_tens
 
 class ImageFromDirSelector:
     def __init__(self) -> None:
         self.current_image = None
         self.current_tensor = None
+        seed = int.from_bytes(os.urandom(4), 'big') + int(time.time() * 1000)
+        self.random_number_generator = random.Random(seed)
 
     CATEGORY = 'Nich/utils'
-    RETURN_TYPES = ("IMAGE",)
-    RETURN_NAMES = ("images",)
+    RETURN_TYPES = ("IMAGE", "STRING", "STRING")
+    RETURN_NAMES = ("image", "filename", "filename_without_extension")
 
     FUNCTION = "sample_images"
-
-    OUTPUT_IS_LIST = (False,)
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -30,7 +31,8 @@ class ImageFromDirSelector:
             "required": {
                 "directory": ("STRING", { "default": "~/images" }),
                 "keep_current_selection": ("BOOLEAN", { "default": False }),
-                "selected_image_name": ("STRING", { "multiline": True, "dynamicPrompts": False })
+                "selected_image_name": ("STRING", { "multiline": True }),
+                "include_subdirectories": ("BOOLEAN", { "default": False }),
             },
             "optional": {
                 "regexp_filter": ("STRING", { "default": None, "multiline": True })
@@ -39,42 +41,56 @@ class ImageFromDirSelector:
         }
 
     @classmethod
-    def IS_CHANGED(cls, directory, unique_id, keep_current_selection, selected_image_filename=None, regexp_filter=None):
-        return "" if keep_current_selection else selected_image_filename
+    def IS_CHANGED(cls, **kwargs):
+        return kwargs['selected_image_name'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
+
 
     def get_current_image(self, selected_image_name):
         return selected_image_name if selected_image_name else self.current_image
 
+
     def requires_new_image(self, current_image, keep_current_selection):
         return not current_image or not keep_current_selection
 
-    def get_files(self, full_path, regexp_filter):
-        files = os.listdir(full_path)
-        if regexp_filter:
-            reg = re.compile(regexp_filter)
-            files = [file for file in files if re.search(reg, file)]
-        return files
 
-    def sample_images(self, directory, unique_id, keep_current_selection=False, selected_image_name=None, regexp_filter=None):
+    def get_files(self, full_path, regexp_filter, include_subdirectories):
+        filename_filter_regexp = None
+        if regexp_filter:
+            filename_filter_regexp = re.compile(regexp_filter)
+
+        return list_images(full_path, include_subdirectories, filename_filter_regexp)
+
+
+    def sample_images(self, *_args, **kwargs):
+        directory = kwargs['directory']
+        selected_image_name = kwargs['selected_image_name']
+        keep_current_selection = kwargs['keep_current_selection']
+        regexp_filter = kwargs['regexp_filter']
+        include_subdirectories = kwargs['include_subdirectories']
+        unique_id = kwargs['unique_id']
+        
+        # todo, this image logic is a bit underestimated
+        # make an ImageSelector class which should be comfy independent and easily testable too
         full_path = os.path.expanduser(directory)
         prior_selected_image = self.get_current_image(selected_image_name)
         new_image = prior_selected_image
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
-            files = self.get_files(full_path, regexp_filter)
-            image_files = [file for file in files if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp'))]
-            self.current_image = random.choice(image_files)
+            image_files = self.get_files(full_path, regexp_filter, include_subdirectories)
+            self.current_image = self.random_number_generator.choice(image_files)
             new_image = self.current_image
+        elif self.current_image is None:
+            self.current_image = selected_image_name
 
         PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
 
         if new_image_required or self.current_tensor is None:
             image = Image.open(os.path.join(full_path, new_image))
-            self.current_tensor = pil_to_tens(image).unsqueeze(0)
+            self.current_tensor = pil_to_tens(image)
 
-        return self.current_tensor
+        return (self.current_tensor, self.current_image, filename_without_extension(self.current_image))
+
 
 NODE_CLASS_MAPPINGS = {
     "Image from Dir Selector (Nich)": ImageFromDirSelector
 }
-
