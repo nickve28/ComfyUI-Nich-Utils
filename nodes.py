@@ -12,6 +12,28 @@ from operator import attrgetter
 from .utils.file_utils import filename_without_extension, list_images
 from .utils.tensor_utils import pil_to_tens
 
+class SelectPortionsFromText:
+    CATEGORY = 'Nich/utils'
+    RETURN_TYPES = ("STRING",)
+    RETURN_NAMES = ("selected_text",)
+    FUNCTION = "execute"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "input": ("STRING", {}),
+                "regexp_filter": ("STRING", { "default": None, "multiline": True }),
+                "delimiter": ("STRING", { "default": " ", "multiline": False })
+            }
+        }
+
+    def execute(self, input, regexp_filter, delimiter):
+        filename_filter_regexp = re.compile(regexp_filter)
+
+        return (delimiter.join(re.findall(filename_filter_regexp, input)),)
+
+
 class ImageFromDirSelector:
     def __init__(self) -> None:
         self.current_image = None
@@ -92,5 +114,6 @@ class ImageFromDirSelector:
 
 
 NODE_CLASS_MAPPINGS = {
-    "Image from Dir Selector (Nich)": ImageFromDirSelector
+    "Image from Dir Selector (Nich)": ImageFromDirSelector,
+    "Select Text with Regular Expression (Nich)": SelectPortionsFromText
 }
