@@ -16,6 +16,13 @@ This node will select a random image from the provided  folder. It allows for
 - Cycling controlnet poses
 - Cycling only through a subset of images (regular expression knowledge required).
 
+## Select Text with Regular Expression
+
+This node allows selecting parts of text using a regular expression, with a delimiter (default = whitespace)
+
+### Example Use cases:
+- Select a subset of a prompt
+
 # Open work
 - Improve code
 - Add tests
