@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-nich-utils"
 description = "Several utility nodes for use with ComfyUI."
-version = "1.0.0"
+version = "0.0.6"
 license = "LICENSE"
 dependencies = ["torchvision", "numpy", "torch", "PIL"]
 
@@ -10,6 +10,6 @@ Repository = "https://github.com/nickve28/ComfyUI-Nich-Utils"
 #  Used by Comfy Registry https://comfyregistry.org
 
 [tool.comfy]
-PublisherId = ""
+PublisherId = "nickve28"
 DisplayName = "ComfyUI-Nich-Utils"
 Icon = ""
