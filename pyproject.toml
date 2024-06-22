@@ -11,5 +11,5 @@ Repository = "https://github.com/nickve28/ComfyUI-Nich-Utils"
 
 [tool.comfy]
 PublisherId = "nickve28"
-DisplayName = "ComfyUI-Nich-Utils"
+DisplayName = "ComfyUI Nich Utils"
 Icon = ""
