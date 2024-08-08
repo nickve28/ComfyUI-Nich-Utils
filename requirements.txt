@@ -1,4 +1,4 @@
 torchvision
 numpy
 torch
-PIL
+pillow
