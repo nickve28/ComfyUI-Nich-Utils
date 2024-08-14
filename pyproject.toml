@@ -2,7 +2,7 @@
 name = "comfyui-nich-utils"
 description = "Several utility nodes for use with ComfyUI."
 version = "0.0.6"
-license = "LICENSE"
+license = { file = "LICENSE" }
 dependencies = ["torchvision", "numpy", "torch", "PIL"]
 
 [project.urls]
