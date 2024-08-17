@@ -2,7 +2,6 @@
 import numpy as np
 from torch import Tensor
 import torch
-from torchvision.transforms import ToTensor
 from PIL import Image
 
 """

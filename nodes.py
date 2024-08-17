@@ -7,7 +7,6 @@ import os
 import re
 import random
 from PIL import Image
-from operator import attrgetter
 
 from .utils.file_utils import filename_without_extension, list_images
 from .utils.tensor_utils import pil_to_tens
@@ -23,7 +22,7 @@ class SelectPortionsFromText:
         return {
             "required": {
                 "input": ("STRING", {}),
-                "regexp_filter": ("STRING", { "default": None, "multiline": True }),
+                "regexp_filter": ("STRING", { "default": "", "multiline": True }),
                 "delimiter": ("STRING", { "default": " ", "multiline": False })
             }
         }
@@ -57,7 +56,7 @@ class ImageFromDirSelector:
                 "include_subdirectories": ("BOOLEAN", { "default": False }),
             },
             "optional": {
-                "regexp_filter": ("STRING", { "default": None, "multiline": True })
+                "regexp_filter": ("STRING", { "default": "", "multiline": True })
             },
             "hidden": {"unique_id": "UNIQUE_ID"}
         }
@@ -90,7 +89,7 @@ class ImageFromDirSelector:
         regexp_filter = kwargs['regexp_filter']
         include_subdirectories = kwargs['include_subdirectories']
         unique_id = kwargs['unique_id']
-        
+
         # todo, this image logic is a bit underestimated
         # make an ImageSelector class which should be comfy independent and easily testable too
         full_path = os.path.expanduser(directory)
