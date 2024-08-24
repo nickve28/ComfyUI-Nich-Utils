@@ -2,7 +2,7 @@
 
 **This library is still in early development! It will likely contain bugs or oddities**
 
-This library contains utility (well, right now a single) nodes for comfyUI.
+This library contains utility nodes for comfyUI.
 
 ## Image from Dir Selector
 
