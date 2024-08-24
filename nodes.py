@@ -2,7 +2,6 @@
 
 import time
 import uuid
-from server import PromptServer
 import os
 import re
 import random
@@ -52,22 +51,20 @@ class ImageFromDirSelector:
             "required": {
                 "directory": ("STRING", { "default": "~/images" }),
                 "keep_current_selection": ("BOOLEAN", { "default": False }),
-                "selected_image_name": ("STRING", { "multiline": True }),
                 "include_subdirectories": ("BOOLEAN", { "default": False }),
             },
             "optional": {
                 "regexp_filter": ("STRING", { "default": "", "multiline": True })
-            },
-            "hidden": {"unique_id": "UNIQUE_ID"}
+            }
         }
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return kwargs['selected_image_name'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
+        return kwargs['regexp_filter'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
 
 
-    def get_current_image(self, selected_image_name):
-        return selected_image_name if selected_image_name else self.current_image
+    def get_current_image(self):
+        return self.current_image
 
 
     def requires_new_image(self, current_image, keep_current_selection):
@@ -84,26 +81,20 @@ class ImageFromDirSelector:
 
     def sample_images(self, *_args, **kwargs):
         directory = kwargs['directory']
-        selected_image_name = kwargs['selected_image_name']
         keep_current_selection = kwargs['keep_current_selection']
         regexp_filter = kwargs['regexp_filter']
         include_subdirectories = kwargs['include_subdirectories']
-        unique_id = kwargs['unique_id']
 
         # todo, this image logic is a bit underestimated
         # make an ImageSelector class which should be comfy independent and easily testable too
         full_path = os.path.expanduser(directory)
-        prior_selected_image = self.get_current_image(selected_image_name)
+        prior_selected_image = self.get_current_image()
         new_image = prior_selected_image
         new_image_required = self.requires_new_image(prior_selected_image, keep_current_selection)
         if new_image_required:
             image_files = self.get_files(full_path, regexp_filter, include_subdirectories)
             self.current_image = self.random_number_generator.choice(image_files)
             new_image = self.current_image
-        elif self.current_image is None:
-            self.current_image = selected_image_name
-
-        PromptServer.instance.send_sync("nich-image-selected", {"node_id": unique_id, "value": new_image})
 
         if new_image_required or self.current_tensor is None:
             image = Image.open(os.path.join(full_path, new_image))
