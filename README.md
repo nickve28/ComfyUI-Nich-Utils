@@ -6,6 +6,9 @@ This library contains utility (well, right now a single) nodes for comfyUI.
 
 ## Image from Dir Selector
 
+### Breaking change
+- This node no longer contains the 'selected image' text box. This one was very unstable when loading / running multiple workflows. Please connect a text output to the filename output(s) if you want to retain what image was used in your workflow. This change should make it more idiomatic and reliable to use.
+
 This node will select a random image from the provided  folder. It allows for
 - Pinning a single image (if you want to keep using the selected image).
 - Allows searching within subdirectories of the given directory path (optional).
