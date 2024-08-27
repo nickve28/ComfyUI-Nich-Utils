@@ -38,6 +38,7 @@ class ImageFromDirSelector:
         self.current_tensor = None
         seed = int.from_bytes(os.urandom(4), 'big') + int(time.time() * 1000)
         self.random_number_generator = random.Random(seed)
+        self.instance_id = str(uuid.uuid4())
 
     CATEGORY = 'Nich/utils'
     RETURN_TYPES = ("IMAGE", "STRING", "STRING")
@@ -60,7 +61,11 @@ class ImageFromDirSelector:
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return kwargs['regexp_filter'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
+        instance_id = kwargs.get('instance_id', str(uuid.uuid4()))
+        if kwargs['keep_current_selection']:
+            return f"{instance_id}_{kwargs['regexp_filter']}"
+        else:
+            return str(uuid.uuid1())
 
 
     def get_current_image(self):
@@ -80,6 +85,7 @@ class ImageFromDirSelector:
 
 
     def sample_images(self, *_args, **kwargs):
+        kwargs['instance_id'] = self.instance_id
         directory = kwargs['directory']
         keep_current_selection = kwargs['keep_current_selection']
         regexp_filter = kwargs['regexp_filter']
