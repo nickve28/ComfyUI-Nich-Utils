@@ -55,12 +55,15 @@ class ImageFromDirSelector:
             },
             "optional": {
                 "regexp_filter": ("STRING", { "default": "", "multiline": True })
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
             }
         }
 
     @classmethod
     def IS_CHANGED(cls, **kwargs):
-        return kwargs['regexp_filter'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
+        return kwargs['unique_id'] if kwargs['keep_current_selection'] else str(uuid.uuid1())
 
 
     def get_current_image(self):
